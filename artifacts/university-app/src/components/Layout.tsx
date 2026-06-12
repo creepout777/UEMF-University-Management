@@ -2,7 +2,7 @@ import { Link, useLocation, useRouter } from "wouter";
 import {
   LayoutDashboard, Users, BookOpen, GraduationCap, Building2,
   ClipboardList, Star, Calendar, FileText, DollarSign, Bell,
-  Menu, ChevronRight, LogOut, Shield, UserCircle
+  Menu, ChevronRight, LogOut, Home,
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -16,7 +16,8 @@ interface NavItem {
 }
 
 const navItems: NavItem[] = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard, allowedRoles: ["admin", "administration", "teacher", "student"] },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard, allowedRoles: ["admin", "administration"] },
+  { href: "/", label: "Home", icon: Home, allowedRoles: ["teacher", "student"] },
   { href: "/students", label: "Students", icon: Users, allowedRoles: ["admin", "administration", "teacher"] },
   { href: "/courses", label: "Courses", icon: BookOpen, allowedRoles: ["admin", "administration", "teacher", "student"] },
   { href: "/faculty", label: "Faculty", icon: GraduationCap, allowedRoles: ["admin", "administration", "teacher"] },
@@ -84,7 +85,7 @@ export default function Layout({ children }: LayoutProps) {
             const isActive = href === "/" ? location === "/" : location.startsWith(href);
             return (
               <Link
-                key={href}
+                key={label}
                 href={href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(

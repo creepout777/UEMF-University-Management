@@ -7,6 +7,8 @@ import { getToken } from "@/lib/api";
 import Layout from "@/components/Layout";
 import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
+import TeacherDashboard from "@/pages/TeacherDashboard";
+import StudentDashboard from "@/pages/StudentDashboard";
 import Students from "@/pages/Students";
 import StudentDetail from "@/pages/StudentDetail";
 import Courses from "@/pages/Courses";
@@ -50,6 +52,14 @@ function ProtectedRoute({ component: Component, allowedRoles }: ProtectedRoutePr
   return <Component />;
 }
 
+function HomeDashboard() {
+  const { user } = useAuth();
+  if (!user) return <Redirect to="/login" />;
+  if (user.role === "teacher") return <TeacherDashboard />;
+  if (user.role === "student") return <StudentDashboard />;
+  return <Dashboard />;
+}
+
 function Router() {
   const { user } = useAuth();
 
@@ -68,9 +78,9 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/login"><Redirect to="/" /></Route>
-        <Route path="/" component={Dashboard} />
+        <Route path="/" component={HomeDashboard} />
         <Route path="/students/:id">
-          {(params) => <ProtectedRoute component={StudentDetail} allowedRoles={["admin", "administration", "teacher"]} />}
+          {() => <ProtectedRoute component={StudentDetail} allowedRoles={["admin", "administration", "teacher"]} />}
         </Route>
         <Route path="/students">
           <ProtectedRoute component={Students} allowedRoles={["admin", "administration", "teacher"]} />
