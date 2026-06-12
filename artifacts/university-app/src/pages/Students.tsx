@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListStudents, useCreateStudent, useUpdateStudent, useDeleteStudent, useListDepartments, getListStudentsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Pencil, Trash2, Eye } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -42,6 +43,7 @@ export default function Students() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const qc = useQueryClient();
+  const perms = usePermissions();
 
   const params: any = {};
   if (search) params.search = search;
@@ -103,7 +105,7 @@ export default function Students() {
       <PageHeader
         title="Students"
         subtitle="Manage student records and enrollment"
-        action={<Button onClick={openCreate} data-testid="button-add-student"><Plus className="w-4 h-4 mr-2" />Add Student</Button>}
+        action={perms.canManageStudents ? <Button onClick={openCreate} data-testid="button-add-student"><Plus className="w-4 h-4 mr-2" />Add Student</Button> : undefined}
       />
 
       {/* Filters */}
@@ -174,8 +176,8 @@ export default function Students() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
                       <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => setLocation(`/students/${s.id}`)} data-testid={`button-view-student-${s.id}`}><Eye className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(s)} data-testid={`button-edit-student-${s.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(s.id)} data-testid={`button-delete-student-${s.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                      {perms.canManageStudents && <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(s)} data-testid={`button-edit-student-${s.id}`}><Pencil className="w-3.5 h-3.5" /></Button>}
+                      {perms.canManageStudents && <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(s.id)} data-testid={`button-delete-student-${s.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>}
                     </div>
                   </TableCell>
                 </TableRow>

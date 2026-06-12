@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListCourses, useCreateCourse, useUpdateCourse, useDeleteCourse, useListDepartments, useListFaculty, getListCoursesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Pencil, Trash2, Users } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -31,6 +32,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function Courses() {
+  const perms = usePermissions();
   const [search, setSearch] = useState("");
   const [deptFilter, setDeptFilter] = useState<string>("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -99,7 +101,7 @@ export default function Courses() {
       <PageHeader
         title="Courses"
         subtitle="Manage academic courses and curriculum"
-        action={<Button onClick={openCreate} data-testid="button-add-course"><Plus className="w-4 h-4 mr-2" />Add Course</Button>}
+        action={perms.canManageCourses ? <Button onClick={openCreate} data-testid="button-add-course"><Plus className="w-4 h-4 mr-2" />Add Course</Button> : undefined}
       />
 
       <div className="flex flex-wrap gap-3 mb-4">
@@ -155,8 +157,8 @@ export default function Courses() {
                   <TableCell className="text-xs text-muted-foreground">{c.semester}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(c)} data-testid={`button-edit-course-${c.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(c.id)} data-testid={`button-delete-course-${c.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                      {perms.canManageCourses && <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(c)} data-testid={`button-edit-course-${c.id}`}><Pencil className="w-3.5 h-3.5" /></Button>}
+                      {perms.canManageCourses && <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(c.id)} data-testid={`button-delete-course-${c.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>}
                     </div>
                   </TableCell>
                 </TableRow>

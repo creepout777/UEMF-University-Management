@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListExams, useCreateExam, useUpdateExam, useDeleteExam, useListCourses, getListExamsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, CalendarClock } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -39,6 +40,7 @@ export default function Exams() {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const { toast } = useToast();
   const qc = useQueryClient();
+  const perms = usePermissions();
   const today = new Date().toISOString().split("T")[0];
 
   const exams = useListExams();
@@ -99,7 +101,7 @@ export default function Exams() {
       <PageHeader
         title="Exams"
         subtitle="Manage examination schedule"
-        action={<Button onClick={openCreate} data-testid="button-add-exam"><Plus className="w-4 h-4 mr-2" />Add Exam</Button>}
+        action={perms.canManageExams ? <Button onClick={openCreate} data-testid="button-add-exam"><Plus className="w-4 h-4 mr-2" />Add Exam</Button> : undefined}
       />
 
       {exams.isLoading ? (
@@ -142,8 +144,8 @@ export default function Exams() {
                         <TableCell className="text-sm font-medium">{e.totalMarks}</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
-                            <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(e)} data-testid={`button-edit-exam-${e.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
-                            <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(e.id)} data-testid={`button-delete-exam-${e.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                            {perms.canManageExams && <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(e)} data-testid={`button-edit-exam-${e.id}`}><Pencil className="w-3.5 h-3.5" /></Button>}
+                            {perms.canManageExams && <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(e.id)} data-testid={`button-delete-exam-${e.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>}
                           </div>
                         </TableCell>
                       </TableRow>

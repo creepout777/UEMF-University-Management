@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListAnnouncements, useCreateAnnouncement, useUpdateAnnouncement, useDeleteAnnouncement, getListAnnouncementsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, Bell } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -45,6 +46,7 @@ export default function Announcements() {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const { toast } = useToast();
   const qc = useQueryClient();
+  const perms = usePermissions();
 
   const announcements = useListAnnouncements();
   const createMutation = useCreateAnnouncement();
@@ -100,7 +102,7 @@ export default function Announcements() {
       <PageHeader
         title="Announcements"
         subtitle="University-wide announcements and notices"
-        action={<Button onClick={openCreate} data-testid="button-add-announcement"><Plus className="w-4 h-4 mr-2" />New Announcement</Button>}
+        action={perms.canManageAnnouncements ? <Button onClick={openCreate}><Plus className="w-4 h-4 mr-2" />New Announcement</Button> : undefined}
       />
 
       {announcements.isLoading ? (
@@ -128,12 +130,14 @@ export default function Announcements() {
                     {!a.isActive && <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">Inactive</span>}
                   </div>
                   <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{a.content}</p>
-                  <p className="text-xs text-muted-foreground mt-2">{new Date(a.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })}</p>
+                  <p className="text-xs text-muted-foreground mt-2">{a.publishedAt ? new Date(a.publishedAt).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—"}</p>
                 </div>
-                <div className="flex gap-1 flex-shrink-0">
-                  <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(a)} data-testid={`button-edit-announcement-${a.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(a.id)} data-testid={`button-delete-announcement-${a.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
-                </div>
+                {perms.canManageAnnouncements && (
+                  <div className="flex gap-1 flex-shrink-0">
+                    <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(a)} data-testid={`button-edit-announcement-${a.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(a.id)} data-testid={`button-delete-announcement-${a.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                  </div>
+                )}
               </div>
             </div>
           ))}

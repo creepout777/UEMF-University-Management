@@ -8,3 +8,4 @@ export * from "./schedules";
 export * from "./exams";
 export * from "./fees";
 export * from "./announcements";
+export * from "./users";

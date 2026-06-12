@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListFees, useCreateFee, useUpdateFee, useGetFeeStats, useListStudents, getListFeesQueryKey, getGetFeeStatsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, DollarSign, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -37,6 +38,7 @@ export default function Fees() {
   const [editItem, setEditItem] = useState<any>(null);
   const { toast } = useToast();
   const qc = useQueryClient();
+  const perms = usePermissions();
 
   const params: any = {};
   if (statusFilter) params.status = statusFilter;
@@ -88,7 +90,7 @@ export default function Fees() {
       <PageHeader
         title="Fee Management"
         subtitle="Manage student fees and payments"
-        action={<Button onClick={openCreate} data-testid="button-add-fee"><Plus className="w-4 h-4 mr-2" />Add Fee</Button>}
+        action={perms.canManageFees ? <Button onClick={openCreate} data-testid="button-add-fee"><Plus className="w-4 h-4 mr-2" />Add Fee</Button> : undefined}
       />
 
       {/* Stats */}
@@ -157,7 +159,7 @@ export default function Fees() {
                   <TableCell className="text-sm text-muted-foreground">{f.paidDate ?? "—"}</TableCell>
                   <TableCell><StatusBadge status={f.status} /></TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(f)} data-testid={`button-edit-fee-${f.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
+                    {perms.canManageFees && <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(f)} data-testid={`button-edit-fee-${f.id}`}><Pencil className="w-3.5 h-3.5" /></Button>}
                   </TableCell>
                 </TableRow>
               ))

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListSchedules, useCreateSchedule, useUpdateSchedule, useDeleteSchedule, useListCourses, useListFaculty, getListSchedulesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, Clock } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -43,6 +44,7 @@ const dayColors: Record<string, string> = {
 };
 
 export default function Schedules() {
+  const perms = usePermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
@@ -105,7 +107,7 @@ export default function Schedules() {
       <PageHeader
         title="Class Schedules"
         subtitle="Manage weekly timetable and room assignments"
-        action={<Button onClick={openCreate} data-testid="button-add-schedule"><Plus className="w-4 h-4 mr-2" />Add Schedule</Button>}
+        action={perms.canManageSchedules ? <Button onClick={openCreate} data-testid="button-add-schedule"><Plus className="w-4 h-4 mr-2" />Add Schedule</Button> : undefined}
       />
 
       <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
@@ -151,8 +153,8 @@ export default function Schedules() {
                   <TableCell className="text-xs text-muted-foreground">{s.semester}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(s)} data-testid={`button-edit-schedule-${s.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(s.id)} data-testid={`button-delete-schedule-${s.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                      {perms.canManageSchedules && <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(s)} data-testid={`button-edit-schedule-${s.id}`}><Pencil className="w-3.5 h-3.5" /></Button>}
+                      {perms.canManageSchedules && <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(s.id)} data-testid={`button-delete-schedule-${s.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>}
                     </div>
                   </TableCell>
                 </TableRow>

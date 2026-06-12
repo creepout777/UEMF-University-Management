@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListFaculty, useCreateFaculty, useUpdateFaculty, useDeleteFaculty, useListDepartments, getListFacultyQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Search, Pencil, Trash2, MapPin, Clock } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -40,6 +41,7 @@ export default function Faculty() {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const { toast } = useToast();
   const qc = useQueryClient();
+  const perms = usePermissions();
 
   const params: any = {};
   if (search) params.search = search;
@@ -100,7 +102,7 @@ export default function Faculty() {
       <PageHeader
         title="Faculty"
         subtitle="Manage faculty members and staff"
-        action={<Button onClick={openCreate} data-testid="button-add-faculty"><Plus className="w-4 h-4 mr-2" />Add Faculty</Button>}
+        action={perms.canManageFaculty ? <Button onClick={openCreate} data-testid="button-add-faculty"><Plus className="w-4 h-4 mr-2" />Add Faculty</Button> : undefined}
       />
 
       <div className="flex flex-wrap gap-3 mb-4">
@@ -169,8 +171,8 @@ export default function Faculty() {
                   <TableCell><StatusBadge status={f.status} /></TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(f)} data-testid={`button-edit-faculty-${f.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(f.id)} data-testid={`button-delete-faculty-${f.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                      {perms.canManageFaculty && <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(f)} data-testid={`button-edit-faculty-${f.id}`}><Pencil className="w-3.5 h-3.5" /></Button>}
+                      {perms.canManageFaculty && <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(f.id)} data-testid={`button-delete-faculty-${f.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>}
                     </div>
                   </TableCell>
                 </TableRow>

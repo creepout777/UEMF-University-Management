@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListGrades, useCreateGrade, useUpdateGrade, useDeleteGrade, useListStudents, useListCourses, getListGradesQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2 } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -44,6 +45,7 @@ export default function Grades() {
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const { toast } = useToast();
   const qc = useQueryClient();
+  const perms = usePermissions();
 
   const grades = useListGrades();
   const students = useListStudents();
@@ -101,7 +103,7 @@ export default function Grades() {
       <PageHeader
         title="Grades"
         subtitle="Record and manage student grades"
-        action={<Button onClick={openCreate} data-testid="button-add-grade"><Plus className="w-4 h-4 mr-2" />Record Grade</Button>}
+        action={perms.canManageGrades ? <Button onClick={openCreate} data-testid="button-add-grade"><Plus className="w-4 h-4 mr-2" />Record Grade</Button> : undefined}
       />
 
       <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
@@ -134,8 +136,8 @@ export default function Grades() {
                   <TableCell className="text-xs text-muted-foreground">{g.semester}</TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-1">
-                      <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(g)} data-testid={`button-edit-grade-${g.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
-                      <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(g.id)} data-testid={`button-delete-grade-${g.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                      {perms.canManageGrades && <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(g)} data-testid={`button-edit-grade-${g.id}`}><Pencil className="w-3.5 h-3.5" /></Button>}
+                      {perms.canManageGrades && <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(g.id)} data-testid={`button-delete-grade-${g.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>}
                     </div>
                   </TableCell>
                 </TableRow>

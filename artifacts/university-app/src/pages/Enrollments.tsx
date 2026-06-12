@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListEnrollments, useCreateEnrollment, useDeleteEnrollment, useListStudents, useListCourses, getListEnrollmentsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2 } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -24,6 +25,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function Enrollments() {
+  const perms = usePermissions();
   const [semesterFilter, setSemesterFilter] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
@@ -71,7 +73,7 @@ export default function Enrollments() {
       <PageHeader
         title="Enrollments"
         subtitle="Manage course enrollments"
-        action={<Button onClick={() => { form.reset({ studentId: 0, courseId: 0, semester: "Fall-2024" }); setDialogOpen(true); }} data-testid="button-add-enrollment"><Plus className="w-4 h-4 mr-2" />Enroll Student</Button>}
+        action={perms.canManageEnrollments ? <Button onClick={() => { form.reset({ studentId: 0, courseId: 0, semester: "Fall-2024" }); setDialogOpen(true); }} data-testid="button-add-enrollment"><Plus className="w-4 h-4 mr-2" />Enroll Student</Button> : undefined}
       />
 
       <div className="flex gap-3 mb-4">
@@ -105,9 +107,9 @@ export default function Enrollments() {
                   </TableCell>
                   <TableCell className="text-sm">{e.semester}</TableCell>
                   <TableCell><StatusBadge status={e.status} /></TableCell>
-                  <TableCell className="text-xs text-muted-foreground">{new Date(e.enrolledAt).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-xs text-muted-foreground">{e.enrolledAt ? new Date(e.enrolledAt).toLocaleDateString() : "—"}</TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(e.id)} data-testid={`button-drop-enrollment-${e.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                    {perms.canManageEnrollments && <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(e.id)} data-testid={`button-drop-enrollment-${e.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>}
                   </TableCell>
                 </TableRow>
               ))

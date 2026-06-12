@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useListDepartments, useCreateDepartment, useUpdateDepartment, useDeleteDepartment, useListFaculty, getListDepartmentsQueryKey } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Pencil, Trash2, Users, BookOpen, GraduationCap, Building2 } from "lucide-react";
+import { usePermissions } from "@/contexts/AuthContext";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -27,6 +28,7 @@ const schema = z.object({
 type FormValues = z.infer<typeof schema>;
 
 export default function Departments() {
+  const perms = usePermissions();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
@@ -88,7 +90,7 @@ export default function Departments() {
       <PageHeader
         title="Departments"
         subtitle="Manage university departments and faculties"
-        action={<Button onClick={openCreate} data-testid="button-add-department"><Plus className="w-4 h-4 mr-2" />Add Department</Button>}
+        action={perms.canManageDepartments ? <Button onClick={openCreate} data-testid="button-add-department"><Plus className="w-4 h-4 mr-2" />Add Department</Button> : undefined}
       />
 
       {departments.isLoading ? (
@@ -111,10 +113,12 @@ export default function Departments() {
                     <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{dept.code}</span>
                   </div>
                 </div>
-                <div className="flex gap-1">
-                  <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(dept)} data-testid={`button-edit-department-${dept.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(dept.id)} data-testid={`button-delete-department-${dept.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
-                </div>
+                {perms.canManageDepartments && (
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="icon" className="w-7 h-7" onClick={() => openEdit(dept)} data-testid={`button-edit-department-${dept.id}`}><Pencil className="w-3.5 h-3.5" /></Button>
+                    <Button variant="ghost" size="icon" className="w-7 h-7 text-destructive hover:text-destructive" onClick={() => setDeleteConfirm(dept.id)} data-testid={`button-delete-department-${dept.id}`}><Trash2 className="w-3.5 h-3.5" /></Button>
+                  </div>
+                )}
               </div>
               {dept.description && <p className="text-xs text-muted-foreground mb-3 line-clamp-2">{dept.description}</p>}
               {dept.headFacultyName && (
