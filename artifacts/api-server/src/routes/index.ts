@@ -13,11 +13,13 @@ import schedulesRouter from "./schedules";
 import examsRouter from "./exams";
 import feesRouter from "./fees";
 import announcementsRouter from "./announcements";
+import telegramRouter from "./telegram";
 
 const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+router.use(telegramRouter);
 
 router.use(requireAuth);
 

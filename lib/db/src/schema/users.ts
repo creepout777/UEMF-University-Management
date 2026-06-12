@@ -9,5 +9,9 @@ export const usersTable = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   role: userRoleEnum("role").notNull(),
   linkedEntityId: serial("linked_entity_id"),
+  telegramChatId: text("telegram_chat_id").unique(),
+  telegramLinkToken: text("telegram_link_token").unique(),
+  telegramLinkExpires: timestamp("telegram_link_expires"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
+

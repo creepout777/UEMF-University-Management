@@ -1,7 +1,6 @@
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
-import router from "./routes";
 import { logger } from "./lib/logger";
 
 const app: Express = express();
@@ -29,6 +28,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use("/api", router);
+if (process.env["DEMO_MODE"] === "true") {
+  const { default: demoRouter } = await import("./routes/demo");
+  app.use("/api", demoRouter);
+} else {
+  const { default: router } = await import("./routes");
+  app.use("/api", router);
+}
 
 export default app;

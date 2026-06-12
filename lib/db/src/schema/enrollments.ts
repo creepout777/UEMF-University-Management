@@ -8,6 +8,7 @@ export const enrollmentsTable = pgTable("enrollments", {
   courseId: integer("course_id").notNull(),
   semester: text("semester").notNull(),
   status: text("status").notNull().default("enrolled"),
+  progressPercent: integer("progress_percent").notNull().default(0),
   enrolledAt: timestamp("enrolled_at").defaultNow().notNull(),
 });
 

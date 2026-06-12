@@ -9,6 +9,8 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "pg": "^8.20.0",
+    "bcryptjs": "^3.0.3"
   }
 }

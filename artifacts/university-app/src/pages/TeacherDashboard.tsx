@@ -11,7 +11,7 @@ import {
   GraduationCap, TrendingUp, Calendar,
 } from "lucide-react";
 import { RadarChart, PolarGrid, PolarAngleAxis, Radar, ResponsiveContainer, Tooltip } from "recharts";
-
+import TelegramLinkCard from "@/components/TelegramLinkCard";
 const DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 const DAY_LABELS: Record<string, string> = {
   monday: "Mon", tuesday: "Tue", wednesday: "Wed",
@@ -255,6 +255,7 @@ export default function TeacherDashboard() {
                 })
             }
           </div>
+          <TelegramLinkCard />
         </div>
       </div>
 

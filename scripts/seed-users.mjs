@@ -1,10 +1,5 @@
-import { createRequire } from "module";
-import { fileURLToPath } from "url";
-import path from "path";
+import bcrypt from "bcryptjs";
 import pg from "pg";
-
-const require = createRequire(import.meta.url);
-const bcrypt = require("/home/runner/workspace/artifacts/api-server/node_modules/bcryptjs/index.js");
 
 const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
 await client.connect();

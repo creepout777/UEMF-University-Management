@@ -11,7 +11,7 @@ import {
   GraduationCap, Bell, Calendar, TrendingUp, CheckCircle2, AlertCircle,
 } from "lucide-react";
 import { RadialBarChart, RadialBar, ResponsiveContainer, Tooltip } from "recharts";
-
+import TelegramLinkCard from "@/components/TelegramLinkCard";
 const DAY_KEYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
 const DAY_COLORS: Record<string, string> = {
   monday: "bg-blue-100 text-blue-700 border-blue-200",
@@ -302,6 +302,7 @@ export default function StudentDashboard() {
               }
             </div>
           </div>
+          <TelegramLinkCard />
         </div>
       </div>
 

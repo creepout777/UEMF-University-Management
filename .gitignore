@@ -47,3 +47,12 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+
+# Database
+.postgres/
+
+# Artifacts
+artifacts/*/node_modules/
+
+# Deployment
+scripts/vps-deploy/
