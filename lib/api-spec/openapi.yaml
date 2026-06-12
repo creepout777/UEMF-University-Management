@@ -1,22 +1,43 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: UEMF University Management System API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: students
+    description: Student management
+  - name: courses
+    description: Course management
+  - name: faculty
+    description: Faculty management
+  - name: departments
+    description: Department management
+  - name: enrollments
+    description: Enrollment management
+  - name: grades
+    description: Grade management
+  - name: schedules
+    description: Schedule management
+  - name: exams
+    description: Exam management
+  - name: fees
+    description: Fee management
+  - name: announcements
+    description: Announcements
+  - name: dashboard
+    description: Dashboard analytics
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +45,945 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ─── DASHBOARD ───────────────────────────────────────────────
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get overall university statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /dashboard/recent-activity:
+    get:
+      operationId: getRecentActivity
+      tags: [dashboard]
+      summary: Get recent activity feed
+      responses:
+        "200":
+          description: Recent activity list
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ActivityItem"
+
+  /dashboard/enrollment-trends:
+    get:
+      operationId: getEnrollmentTrends
+      tags: [dashboard]
+      summary: Get enrollment trends by semester
+      responses:
+        "200":
+          description: Enrollment trend data
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/EnrollmentTrend"
+
+  /dashboard/department-stats:
+    get:
+      operationId: getDepartmentStats
+      tags: [dashboard]
+      summary: Get stats grouped by department
+      responses:
+        "200":
+          description: Department breakdown
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DepartmentStat"
+
+  # ─── STUDENTS ─────────────────────────────────────────────────
+  /students:
+    get:
+      operationId: listStudents
+      tags: [students]
+      summary: List all students
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: departmentId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, graduated, suspended]
+      responses:
+        "200":
+          description: List of students
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Student"
+    post:
+      operationId: createStudent
+      tags: [students]
+      summary: Create a new student
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStudentBody"
+      responses:
+        "201":
+          description: Created student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+
+  /students/{id}:
+    get:
+      operationId: getStudent
+      tags: [students]
+      summary: Get a student by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    put:
+      operationId: updateStudent
+      tags: [students]
+      summary: Update a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateStudentBody"
+      responses:
+        "200":
+          description: Updated student
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Student"
+    delete:
+      operationId: deleteStudent
+      tags: [students]
+      summary: Delete a student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /students/{id}/grades:
+    get:
+      operationId: getStudentGrades
+      tags: [students]
+      summary: Get grades for a specific student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student grades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grade"
+
+  /students/{id}/enrollments:
+    get:
+      operationId: getStudentEnrollments
+      tags: [students]
+      summary: Get enrollments for a specific student
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Student enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Enrollment"
+
+  # ─── COURSES ──────────────────────────────────────────────────
+  /courses:
+    get:
+      operationId: listCourses
+      tags: [courses]
+      summary: List all courses
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: departmentId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Course"
+    post:
+      operationId: createCourse
+      tags: [courses]
+      summary: Create a new course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseBody"
+      responses:
+        "201":
+          description: Created course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /courses/{id}:
+    get:
+      operationId: getCourse
+      tags: [courses]
+      summary: Get a course by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+    put:
+      operationId: updateCourse
+      tags: [courses]
+      summary: Update a course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCourseBody"
+      responses:
+        "200":
+          description: Updated course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+    delete:
+      operationId: deleteCourse
+      tags: [courses]
+      summary: Delete a course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── FACULTY ──────────────────────────────────────────────────
+  /faculty:
+    get:
+      operationId: listFaculty
+      tags: [faculty]
+      summary: List all faculty members
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: departmentId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of faculty
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FacultyMember"
+    post:
+      operationId: createFaculty
+      tags: [faculty]
+      summary: Create a faculty member
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFacultyBody"
+      responses:
+        "201":
+          description: Created faculty member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FacultyMember"
+
+  /faculty/{id}:
+    get:
+      operationId: getFaculty
+      tags: [faculty]
+      summary: Get a faculty member by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Faculty member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FacultyMember"
+    put:
+      operationId: updateFaculty
+      tags: [faculty]
+      summary: Update a faculty member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFacultyBody"
+      responses:
+        "200":
+          description: Updated faculty member
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FacultyMember"
+    delete:
+      operationId: deleteFaculty
+      tags: [faculty]
+      summary: Delete a faculty member
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── DEPARTMENTS ──────────────────────────────────────────────
+  /departments:
+    get:
+      operationId: listDepartments
+      tags: [departments]
+      summary: List all departments
+      responses:
+        "200":
+          description: List of departments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Department"
+    post:
+      operationId: createDepartment
+      tags: [departments]
+      summary: Create a department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepartmentBody"
+      responses:
+        "201":
+          description: Created department
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+
+  /departments/{id}:
+    get:
+      operationId: getDepartment
+      tags: [departments]
+      summary: Get a department by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Department
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+    put:
+      operationId: updateDepartment
+      tags: [departments]
+      summary: Update a department
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDepartmentBody"
+      responses:
+        "200":
+          description: Updated department
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Department"
+    delete:
+      operationId: deleteDepartment
+      tags: [departments]
+      summary: Delete a department
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── ENROLLMENTS ──────────────────────────────────────────────
+  /enrollments:
+    get:
+      operationId: listEnrollments
+      tags: [enrollments]
+      summary: List all enrollments
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: integer
+        - name: courseId
+          in: query
+          schema:
+            type: integer
+        - name: semester
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of enrollments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Enrollment"
+    post:
+      operationId: createEnrollment
+      tags: [enrollments]
+      summary: Enroll a student in a course
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEnrollmentBody"
+      responses:
+        "201":
+          description: Created enrollment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Enrollment"
+
+  /enrollments/{id}:
+    delete:
+      operationId: deleteEnrollment
+      tags: [enrollments]
+      summary: Remove an enrollment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── GRADES ───────────────────────────────────────────────────
+  /grades:
+    get:
+      operationId: listGrades
+      tags: [grades]
+      summary: List grades
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: integer
+        - name: courseId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of grades
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Grade"
+    post:
+      operationId: createGrade
+      tags: [grades]
+      summary: Record a grade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGradeBody"
+      responses:
+        "201":
+          description: Created grade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grade"
+
+  /grades/{id}:
+    put:
+      operationId: updateGrade
+      tags: [grades]
+      summary: Update a grade
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGradeBody"
+      responses:
+        "200":
+          description: Updated grade
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Grade"
+    delete:
+      operationId: deleteGrade
+      tags: [grades]
+      summary: Delete a grade
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── SCHEDULES ────────────────────────────────────────────────
+  /schedules:
+    get:
+      operationId: listSchedules
+      tags: [schedules]
+      summary: List class schedules
+      parameters:
+        - name: courseId
+          in: query
+          schema:
+            type: integer
+        - name: facultyId
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of schedules
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Schedule"
+    post:
+      operationId: createSchedule
+      tags: [schedules]
+      summary: Create a schedule
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateScheduleBody"
+      responses:
+        "201":
+          description: Created schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Schedule"
+
+  /schedules/{id}:
+    put:
+      operationId: updateSchedule
+      tags: [schedules]
+      summary: Update a schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateScheduleBody"
+      responses:
+        "200":
+          description: Updated schedule
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Schedule"
+    delete:
+      operationId: deleteSchedule
+      tags: [schedules]
+      summary: Delete a schedule
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── EXAMS ────────────────────────────────────────────────────
+  /exams:
+    get:
+      operationId: listExams
+      tags: [exams]
+      summary: List all exams
+      parameters:
+        - name: courseId
+          in: query
+          schema:
+            type: integer
+        - name: semester
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of exams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Exam"
+    post:
+      operationId: createExam
+      tags: [exams]
+      summary: Create an exam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExamBody"
+      responses:
+        "201":
+          description: Created exam
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exam"
+
+  /exams/{id}:
+    put:
+      operationId: updateExam
+      tags: [exams]
+      summary: Update an exam
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateExamBody"
+      responses:
+        "200":
+          description: Updated exam
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Exam"
+    delete:
+      operationId: deleteExam
+      tags: [exams]
+      summary: Delete an exam
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  # ─── FEES ─────────────────────────────────────────────────────
+  /fees:
+    get:
+      operationId: listFees
+      tags: [fees]
+      summary: List fee records
+      parameters:
+        - name: studentId
+          in: query
+          schema:
+            type: integer
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, paid, overdue, waived]
+      responses:
+        "200":
+          description: List of fees
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Fee"
+    post:
+      operationId: createFee
+      tags: [fees]
+      summary: Create a fee record
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFeeBody"
+      responses:
+        "201":
+          description: Created fee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fee"
+
+  /fees/{id}:
+    put:
+      operationId: updateFee
+      tags: [fees]
+      summary: Update a fee record
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateFeeBody"
+      responses:
+        "200":
+          description: Updated fee
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fee"
+
+  /fees/stats:
+    get:
+      operationId: getFeeStats
+      tags: [fees]
+      summary: Get financial statistics
+      responses:
+        "200":
+          description: Fee statistics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeeStats"
+
+  # ─── ANNOUNCEMENTS ────────────────────────────────────────────
+  /announcements:
+    get:
+      operationId: listAnnouncements
+      tags: [announcements]
+      summary: List all announcements
+      responses:
+        "200":
+          description: List of announcements
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Announcement"
+    post:
+      operationId: createAnnouncement
+      tags: [announcements]
+      summary: Create an announcement
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnnouncementBody"
+      responses:
+        "201":
+          description: Created announcement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+
+  /announcements/{id}:
+    put:
+      operationId: updateAnnouncement
+      tags: [announcements]
+      summary: Update an announcement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAnnouncementBody"
+      responses:
+        "200":
+          description: Updated announcement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Announcement"
+    delete:
+      operationId: deleteAnnouncement
+      tags: [announcements]
+      summary: Delete an announcement
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +991,711 @@ components:
       properties:
         status:
           type: string
+      required: [status]
+
+    # ─── Dashboard ───────────────────────────────────────────────
+    DashboardStats:
+      type: object
+      properties:
+        totalStudents:
+          type: integer
+        totalFaculty:
+          type: integer
+        totalCourses:
+          type: integer
+        totalDepartments:
+          type: integer
+        activeEnrollments:
+          type: integer
+        pendingFees:
+          type: number
+        upcomingExams:
+          type: integer
+        averageGpa:
+          type: number
       required:
+        - totalStudents
+        - totalFaculty
+        - totalCourses
+        - totalDepartments
+        - activeEnrollments
+        - pendingFees
+        - upcomingExams
+        - averageGpa
+
+    ActivityItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        type:
+          type: string
+          enum: [enrollment, grade, payment, announcement, exam, student, faculty]
+        title:
+          type: string
+        description:
+          type: string
+        timestamp:
+          type: string
+      required: [id, type, title, description, timestamp]
+
+    EnrollmentTrend:
+      type: object
+      properties:
+        semester:
+          type: string
+        enrollments:
+          type: integer
+        year:
+          type: integer
+      required: [semester, enrollments, year]
+
+    DepartmentStat:
+      type: object
+      properties:
+        departmentName:
+          type: string
+        studentCount:
+          type: integer
+        courseCount:
+          type: integer
+        facultyCount:
+          type: integer
+      required: [departmentName, studentCount, courseCount, facultyCount]
+
+    # ─── Student ─────────────────────────────────────────────────
+    Student:
+      type: object
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, other]
+        nationality:
+          type: string
+        address:
+          type: string
+        departmentId:
+          type: integer
+        departmentName:
+          type: string
+        enrollmentYear:
+          type: integer
+        status:
+          type: string
+          enum: [active, inactive, graduated, suspended]
+        gpa:
+          type: number
+        createdAt:
+          type: string
+      required:
+        - id
+        - studentId
+        - firstName
+        - lastName
+        - email
+        - departmentId
+        - enrollmentYear
         - status
 
+    CreateStudentBody:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        dateOfBirth:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, other]
+        nationality:
+          type: string
+        address:
+          type: string
+        departmentId:
+          type: integer
+        enrollmentYear:
+          type: integer
+        status:
+          type: string
+          enum: [active, inactive, graduated, suspended]
+      required: [firstName, lastName, email, departmentId, enrollmentYear, status]
+
+    # ─── Course ──────────────────────────────────────────────────
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        courseCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        credits:
+          type: integer
+        departmentId:
+          type: integer
+        departmentName:
+          type: string
+        facultyId:
+          type: integer
+        facultyName:
+          type: string
+        maxStudents:
+          type: integer
+        enrolledCount:
+          type: integer
+        semester:
+          type: string
+        level:
+          type: string
+          enum: [undergraduate, graduate, doctoral]
+        createdAt:
+          type: string
+      required:
+        - id
+        - courseCode
+        - name
+        - credits
+        - departmentId
+        - semester
+        - level
+
+    CreateCourseBody:
+      type: object
+      properties:
+        courseCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        credits:
+          type: integer
+        departmentId:
+          type: integer
+        facultyId:
+          type: integer
+        maxStudents:
+          type: integer
+        semester:
+          type: string
+        level:
+          type: string
+          enum: [undergraduate, graduate, doctoral]
+      required: [courseCode, name, credits, departmentId, semester, level]
+
+    # ─── Faculty ─────────────────────────────────────────────────
+    FacultyMember:
+      type: object
+      properties:
+        id:
+          type: integer
+        employeeId:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        departmentId:
+          type: integer
+        departmentName:
+          type: string
+        title:
+          type: string
+          enum: [professor, associate_professor, assistant_professor, lecturer, instructor]
+        specialization:
+          type: string
+        officeLocation:
+          type: string
+        officeHours:
+          type: string
+        courseCount:
+          type: integer
+        status:
+          type: string
+          enum: [active, inactive, on_leave]
+        createdAt:
+          type: string
+      required:
+        - id
+        - employeeId
+        - firstName
+        - lastName
+        - email
+        - departmentId
+        - title
+        - status
+
+    CreateFacultyBody:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        departmentId:
+          type: integer
+        title:
+          type: string
+          enum: [professor, associate_professor, assistant_professor, lecturer, instructor]
+        specialization:
+          type: string
+        officeLocation:
+          type: string
+        officeHours:
+          type: string
+        status:
+          type: string
+          enum: [active, inactive, on_leave]
+      required: [firstName, lastName, email, departmentId, title, status]
+
+    # ─── Department ──────────────────────────────────────────────
+    Department:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        headFacultyId:
+          type: integer
+        headFacultyName:
+          type: string
+        building:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+        studentCount:
+          type: integer
+        facultyCount:
+          type: integer
+        courseCount:
+          type: integer
+        createdAt:
+          type: string
+      required: [id, name, code]
+
+    CreateDepartmentBody:
+      type: object
+      properties:
+        name:
+          type: string
+        code:
+          type: string
+        description:
+          type: string
+        headFacultyId:
+          type: integer
+        building:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+      required: [name, code]
+
+    # ─── Enrollment ──────────────────────────────────────────────
+    Enrollment:
+      type: object
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        courseId:
+          type: integer
+        courseName:
+          type: string
+        courseCode:
+          type: string
+        semester:
+          type: string
+        enrolledAt:
+          type: string
+        status:
+          type: string
+          enum: [enrolled, dropped, completed]
+      required: [id, studentId, courseId, semester, status]
+
+    CreateEnrollmentBody:
+      type: object
+      properties:
+        studentId:
+          type: integer
+        courseId:
+          type: integer
+        semester:
+          type: string
+      required: [studentId, courseId, semester]
+
+    # ─── Grade ───────────────────────────────────────────────────
+    Grade:
+      type: object
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        courseId:
+          type: integer
+        courseName:
+          type: string
+        courseCode:
+          type: string
+        score:
+          type: number
+        letterGrade:
+          type: string
+        gradePoints:
+          type: number
+        semester:
+          type: string
+        assessmentType:
+          type: string
+          enum: [midterm, final, assignment, quiz, project]
+        comments:
+          type: string
+        gradedAt:
+          type: string
+      required:
+        - id
+        - studentId
+        - courseId
+        - score
+        - letterGrade
+        - semester
+        - assessmentType
+
+    CreateGradeBody:
+      type: object
+      properties:
+        studentId:
+          type: integer
+        courseId:
+          type: integer
+        score:
+          type: number
+        semester:
+          type: string
+        assessmentType:
+          type: string
+          enum: [midterm, final, assignment, quiz, project]
+        comments:
+          type: string
+      required: [studentId, courseId, score, semester, assessmentType]
+
+    # ─── Schedule ────────────────────────────────────────────────
+    Schedule:
+      type: object
+      properties:
+        id:
+          type: integer
+        courseId:
+          type: integer
+        courseName:
+          type: string
+        courseCode:
+          type: string
+        facultyId:
+          type: integer
+        facultyName:
+          type: string
+        dayOfWeek:
+          type: string
+          enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        startTime:
+          type: string
+        endTime:
+          type: string
+        room:
+          type: string
+        building:
+          type: string
+        semester:
+          type: string
+        type:
+          type: string
+          enum: [lecture, lab, tutorial, seminar]
+      required:
+        - id
+        - courseId
+        - dayOfWeek
+        - startTime
+        - endTime
+        - room
+        - semester
+        - type
+
+    CreateScheduleBody:
+      type: object
+      properties:
+        courseId:
+          type: integer
+        facultyId:
+          type: integer
+        dayOfWeek:
+          type: string
+          enum: [monday, tuesday, wednesday, thursday, friday, saturday, sunday]
+        startTime:
+          type: string
+        endTime:
+          type: string
+        room:
+          type: string
+        building:
+          type: string
+        semester:
+          type: string
+        type:
+          type: string
+          enum: [lecture, lab, tutorial, seminar]
+      required: [courseId, dayOfWeek, startTime, endTime, room, semester, type]
+
+    # ─── Exam ────────────────────────────────────────────────────
+    Exam:
+      type: object
+      properties:
+        id:
+          type: integer
+        courseId:
+          type: integer
+        courseName:
+          type: string
+        courseCode:
+          type: string
+        title:
+          type: string
+        type:
+          type: string
+          enum: [midterm, final, quiz, practical]
+        date:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        room:
+          type: string
+        semester:
+          type: string
+        totalMarks:
+          type: integer
+        instructions:
+          type: string
+      required:
+        - id
+        - courseId
+        - title
+        - type
+        - date
+        - startTime
+        - endTime
+        - room
+        - semester
+        - totalMarks
+
+    CreateExamBody:
+      type: object
+      properties:
+        courseId:
+          type: integer
+        title:
+          type: string
+        type:
+          type: string
+          enum: [midterm, final, quiz, practical]
+        date:
+          type: string
+        startTime:
+          type: string
+        endTime:
+          type: string
+        room:
+          type: string
+        semester:
+          type: string
+        totalMarks:
+          type: integer
+        instructions:
+          type: string
+      required: [courseId, title, type, date, startTime, endTime, room, semester, totalMarks]
+
+    # ─── Fee ─────────────────────────────────────────────────────
+    Fee:
+      type: object
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        studentName:
+          type: string
+        type:
+          type: string
+          enum: [tuition, registration, library, lab, dormitory, other]
+        amount:
+          type: number
+        dueDate:
+          type: string
+        paidDate:
+          type: string
+        status:
+          type: string
+          enum: [pending, paid, overdue, waived]
+        semester:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+      required:
+        - id
+        - studentId
+        - type
+        - amount
+        - dueDate
+        - status
+        - semester
+
+    CreateFeeBody:
+      type: object
+      properties:
+        studentId:
+          type: integer
+        type:
+          type: string
+          enum: [tuition, registration, library, lab, dormitory, other]
+        amount:
+          type: number
+        dueDate:
+          type: string
+        paidDate:
+          type: string
+        status:
+          type: string
+          enum: [pending, paid, overdue, waived]
+        semester:
+          type: string
+        description:
+          type: string
+      required: [studentId, type, amount, dueDate, status, semester]
+
+    FeeStats:
+      type: object
+      properties:
+        totalCollected:
+          type: number
+        totalPending:
+          type: number
+        totalOverdue:
+          type: number
+        totalWaived:
+          type: number
+        collectionRate:
+          type: number
+      required:
+        - totalCollected
+        - totalPending
+        - totalOverdue
+        - totalWaived
+        - collectionRate
+
+    # ─── Announcement ────────────────────────────────────────────
+    Announcement:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+          enum: [academic, administrative, event, emergency, general]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        authorId:
+          type: integer
+        authorName:
+          type: string
+        targetAudience:
+          type: string
+          enum: [all, students, faculty, staff]
+        publishedAt:
+          type: string
+        expiresAt:
+          type: string
+        isActive:
+          type: boolean
+      required:
+        - id
+        - title
+        - content
+        - category
+        - priority
+        - targetAudience
+        - isActive
+
+    CreateAnnouncementBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        category:
+          type: string
+          enum: [academic, administrative, event, emergency, general]
+        priority:
+          type: string
+          enum: [low, medium, high, urgent]
+        targetAudience:
+          type: string
+          enum: [all, students, faculty, staff]
+        expiresAt:
+          type: string
+        isActive:
+          type: boolean
+      required: [title, content, category, priority, targetAudience]
