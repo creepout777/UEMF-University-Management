@@ -1,13 +1,24 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { coursesTable, departmentsTable, facultyTable, enrollmentsTable } from "@workspace/db";
-import { eq, count } from "drizzle-orm";
+import { eq, count, inArray } from "drizzle-orm";
+import { getStudentCourseIds } from "../lib/scopeFilter";
 
 const router: IRouter = Router();
 
 router.get("/courses", async (req, res) => {
   try {
-    const rows = await db.select().from(coursesTable);
+    const user = req.user!;
+    let rows = await db.select().from(coursesTable);
+
+    if (user.role === "teacher") {
+      rows = rows.filter((c) => c.facultyId === user.linkedEntityId);
+    } else if (user.role === "student") {
+      const courseIds = await getStudentCourseIds(user);
+      if (courseIds.length === 0) return res.json([]);
+      rows = rows.filter((c) => courseIds.includes(c.id));
+    }
+
     const filtered = rows.filter((c) => {
       if (req.query.departmentId && c.departmentId !== Number(req.query.departmentId)) return false;
       if (req.query.search) {
@@ -16,6 +27,7 @@ router.get("/courses", async (req, res) => {
       }
       return true;
     });
+
     const result = await Promise.all(
       filtered.map(async (c) => {
         const [dept] = await db.select().from(departmentsTable).where(eq(departmentsTable.id, c.departmentId));

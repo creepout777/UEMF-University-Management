@@ -1,7 +1,8 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { gradesTable, studentsTable, coursesTable } from "@workspace/db";
-import { eq } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
+import { getTeacherCourseIds } from "../lib/scopeFilter";
 
 const router: IRouter = Router();
 
@@ -21,12 +22,23 @@ function scoreToLetterGrade(score: number): { letter: string; points: number } {
 
 router.get("/grades", async (req, res) => {
   try {
-    const rows = await db.select().from(gradesTable);
+    const user = req.user!;
+    let rows = await db.select().from(gradesTable);
+
+    if (user.role === "teacher") {
+      const courseIds = await getTeacherCourseIds(user);
+      if (courseIds.length === 0) return res.json([]);
+      rows = rows.filter((g) => courseIds.includes(g.courseId));
+    } else if (user.role === "student") {
+      rows = rows.filter((g) => g.studentId === user.linkedEntityId);
+    }
+
     const filtered = rows.filter((g) => {
       if (req.query.studentId && g.studentId !== Number(req.query.studentId)) return false;
       if (req.query.courseId && g.courseId !== Number(req.query.courseId)) return false;
       return true;
     });
+
     const result = await Promise.all(
       filtered.map(async (g) => {
         const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, g.studentId));

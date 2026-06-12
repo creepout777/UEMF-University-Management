@@ -2,17 +2,29 @@ import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { schedulesTable, coursesTable, facultyTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import { getStudentCourseIds } from "../lib/scopeFilter";
 
 const router: IRouter = Router();
 
 router.get("/schedules", async (req, res) => {
   try {
-    const rows = await db.select().from(schedulesTable);
+    const user = req.user!;
+    let rows = await db.select().from(schedulesTable);
+
+    if (user.role === "teacher") {
+      rows = rows.filter((s) => s.facultyId === user.linkedEntityId);
+    } else if (user.role === "student") {
+      const courseIds = await getStudentCourseIds(user);
+      if (courseIds.length === 0) return res.json([]);
+      rows = rows.filter((s) => courseIds.includes(s.courseId));
+    }
+
     const filtered = rows.filter((s) => {
       if (req.query.courseId && s.courseId !== Number(req.query.courseId)) return false;
       if (req.query.facultyId && s.facultyId !== Number(req.query.facultyId)) return false;
       return true;
     });
+
     const result = await Promise.all(
       filtered.map(async (s) => {
         const [course] = await db.select().from(coursesTable).where(eq(coursesTable.id, s.courseId));

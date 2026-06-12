@@ -1,20 +1,29 @@
 import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { feesTable, studentsTable } from "@workspace/db";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 const router: IRouter = Router();
 
 router.get("/fees", async (req, res) => {
   try {
-    const rows = await db.select().from(feesTable);
-    const filtered = rows.filter((f) => {
-      if (req.query.studentId && f.studentId !== Number(req.query.studentId)) return false;
-      if (req.query.status && f.status !== req.query.status) return false;
-      return true;
-    });
+    const user = req.user!;
+
+    if (user.role === "teacher") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+
+    let rows = await db.select().from(feesTable);
+
+    if (user.role === "student") {
+      rows = rows.filter((f) => f.studentId === user.linkedEntityId);
+    } else {
+      if (req.query.studentId) rows = rows.filter((f) => f.studentId === Number(req.query.studentId));
+      if (req.query.status) rows = rows.filter((f) => f.status === req.query.status);
+    }
+
     const result = await Promise.all(
-      filtered.map(async (f) => {
+      rows.map(async (f) => {
         const [student] = await db.select().from(studentsTable).where(eq(studentsTable.id, f.studentId));
         return { ...f, amount: Number(f.amount), createdAt: f.createdAt.toISOString(), studentName: student ? `${student.firstName} ${student.lastName}` : undefined };
       })
@@ -51,6 +60,10 @@ router.put("/fees/:id", async (req, res) => {
 
 router.get("/fees/stats", async (req, res) => {
   try {
+    const user = req.user!;
+    if (user.role === "teacher" || user.role === "student") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
     const rows = await db.select().from(feesTable);
     const totalCollected = rows.filter((f) => f.status === "paid").reduce((sum, f) => sum + Number(f.amount), 0);
     const totalPending = rows.filter((f) => f.status === "pending").reduce((sum, f) => sum + Number(f.amount), 0);

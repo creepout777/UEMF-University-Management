@@ -2,12 +2,23 @@ import { Router, type IRouter } from "express";
 import { db } from "@workspace/db";
 import { studentsTable, departmentsTable, gradesTable, enrollmentsTable, coursesTable } from "@workspace/db";
 import { eq, count } from "drizzle-orm";
+import { getTeacherStudentIds } from "../lib/scopeFilter";
 
 const router: IRouter = Router();
 
 router.get("/students", async (req, res) => {
   try {
-    const rows = await db.select().from(studentsTable);
+    const user = req.user!;
+    let rows = await db.select().from(studentsTable);
+
+    if (user.role === "teacher") {
+      const studentIds = await getTeacherStudentIds(user);
+      if (studentIds.length === 0) return res.json([]);
+      rows = rows.filter((s) => studentIds.includes(s.id));
+    } else if (user.role === "student") {
+      rows = rows.filter((s) => s.id === user.linkedEntityId);
+    }
+
     const filtered = rows.filter((s) => {
       if (req.query.departmentId && s.departmentId !== Number(req.query.departmentId)) return false;
       if (req.query.status && s.status !== req.query.status) return false;
@@ -17,6 +28,7 @@ router.get("/students", async (req, res) => {
       }
       return true;
     });
+
     const result = await Promise.all(
       filtered.map(async (s) => {
         const [dept] = await db.select().from(departmentsTable).where(eq(departmentsTable.id, s.departmentId));
@@ -46,7 +58,12 @@ router.post("/students", async (req, res) => {
 
 router.get("/students/:id", async (req, res) => {
   try {
-    const [s] = await db.select().from(studentsTable).where(eq(studentsTable.id, Number(req.params.id)));
+    const user = req.user!;
+    const id = Number(req.params.id);
+    if (user.role === "student" && id !== user.linkedEntityId) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const [s] = await db.select().from(studentsTable).where(eq(studentsTable.id, id));
     if (!s) return res.status(404).json({ error: "Not found" });
     const [dept] = await db.select().from(departmentsTable).where(eq(departmentsTable.id, s.departmentId));
     res.json({ ...s, gpa: s.gpa ? Number(s.gpa) : null, createdAt: s.createdAt.toISOString(), departmentName: dept?.name });
