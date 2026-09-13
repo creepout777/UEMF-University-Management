@@ -1,11 +1,9 @@
 # Système de Gestion Universitaire UEMF
+
 <p align="center">
-  <img
-    src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/openclaw-logo-text-dark.svg"
-    alt="OpenClaw"
-    width="400"
-  />
+  <img src="https://raw.githubusercontent.com/OpenClaw/OpenClaw/master/res/openclaw_logo.png" alt="OpenClaw Logo" width="220"/>
 </p>
+
 Bienvenue dans le dépôt du projet **UEMF University Management**. 
 
 ---
