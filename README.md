@@ -1,4 +1,4 @@
-# Système de Gestion Universitaire UEMF
+# Système de Gestion Universitaire UEMF avec Openclaw
 
 <p align="center">
   <img
@@ -7,7 +7,6 @@
     width="180"
   />
 </p>
-Bienvenue dans le dépôt du projet **UEMF University Management**. 
 
 ---
 
