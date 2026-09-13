@@ -2,9 +2,9 @@
 
 <p align="center">
   <img
-    src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/openclaw-logo-text.png"
+    src="https://raw.githubusercontent.com/openclaw/openclaw/main/docs/assets/pixel-lobster.svg"
     alt="OpenClaw"
-    width="500"
+    width="180"
   />
 </p>
 Bienvenue dans le dépôt du projet **UEMF University Management**. 
